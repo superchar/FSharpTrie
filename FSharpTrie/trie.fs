@@ -9,22 +9,21 @@ let Root = { IsComplete = false; Children = Map.empty }
 let private updateChild (keyPart: char) (node: TrieNode) (child: TrieNode) =
     { node with Children = node.Children |> Map.add keyPart child }
     
-
-let rec private addRec (key: list<char>) (node: TrieNode): TrieNode =
+let rec private addRec (node: TrieNode) (key: list<char>): TrieNode =
     match key with
     | head :: tail ->
         match node.Children |>
                         Map.tryFind head with
-                        | Some(child) -> updateChild head node (addRec tail child)
+                        | Some(child) -> updateChild head node (addRec child tail)
                         | None ->  updateChild head node
-                                       (addRec tail { IsComplete = tail = []; Children = Map.empty })
+                                       (addRec { IsComplete = tail = []; Children = Map.empty } tail)
     | [] -> node
 
 let add (key: string) (node: TrieNode) = key
                                          |> Seq.toList
-                                         |> fun key -> addRec key node
+                                         |> addRec node
 
-let rec private containsKeyRec(key: list<char>) (node: TrieNode) =
+let rec private containsKeyRec(node: TrieNode) (key: list<char>) =
     match key with
     | [ head ] -> match node.Children |>
                         Map.tryFind head with
@@ -33,10 +32,10 @@ let rec private containsKeyRec(key: list<char>) (node: TrieNode) =
     | head :: tail ->
         match node.Children |>
                         Map.tryFind head with
-                        | Some(child) -> containsKeyRec tail child
+                        | Some(child) -> containsKeyRec child tail
                         | None -> false 
     | [] -> true
 
 let containsKey(key: string) (node: TrieNode) : bool = key
                                                        |> Seq.toList
-                                                       |> fun key -> containsKeyRec key node
+                                                       |> containsKeyRec node
