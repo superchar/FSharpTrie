@@ -16,7 +16,7 @@ type TrieNode =
           Children = Map [ (childKey, child) ] }
 
 let Root =
-    { KeyPart = '0'
+    { KeyPart = '\x00'
       IsComplete = false
       Children = Map.empty }
 
@@ -35,7 +35,7 @@ let rec private addRec node key =
         match node.Children |> Map.tryFind head with
         | Some child -> updateChild head node (addRec child tail)
         | None -> updateChild head node (createSubtree key)
-    | [] -> node
+    | [] -> { node with IsComplete = true }
 
 let add (key: string) node = key |> Seq.toList |> addRec node
 
