@@ -50,3 +50,13 @@ let rec private getStringsRec(node: TrieNode): char list list =
 
 let getStrings(node: TrieNode): string list =
     getStringsRec node |> List.map(fun w -> w |> List.toArray |> System.String)
+    
+let rec private tryGetSubtreeRec (node: TrieNode) (key: char list) : TrieNode option =
+    match key with
+    | head :: tail ->
+        if node.Children.ContainsKey head then tryGetSubtreeRec (node.Children[head]) tail else None
+    | [] -> Some(node)
+
+let tryGetSubtree(key: string) (node: TrieNode) : TrieNode option = key
+                                                                    |> Seq.toList
+                                                                    |> tryGetSubtreeRec node
