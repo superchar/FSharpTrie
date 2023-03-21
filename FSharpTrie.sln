@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpTrie", "FSharpTrie\FSharpTrie.fsproj", "{117524CD-E217-4C4E-874A-C5FFC57FF453}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsharpTrieConsole", "FsharpTrieConsole\FsharpTrieConsole.fsproj", "{F1CF53D7-02D3-4C93-BD1D-5408E7D8A455}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{117524CD-E217-4C4E-874A-C5FFC57FF453}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{117524CD-E217-4C4E-874A-C5FFC57FF453}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{117524CD-E217-4C4E-874A-C5FFC57FF453}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1CF53D7-02D3-4C93-BD1D-5408E7D8A455}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1CF53D7-02D3-4C93-BD1D-5408E7D8A455}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1CF53D7-02D3-4C93-BD1D-5408E7D8A455}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1CF53D7-02D3-4C93-BD1D-5408E7D8A455}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
