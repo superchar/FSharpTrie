@@ -4,16 +4,31 @@ type T =
     | Root of Map<char, T>
     | Node of Map<char, T> * bool
 
-let Leaf = Node(Map.empty, true)
+let private Leaf = Node(Map.empty, true)
 
-let createRoot () = Root Map.empty
-
-let getChildren trie =
+let private getChildren trie =
     match trie with
     | Root c -> c
     | Node (c, _) -> c
 
-let tryGetChild key = getChildren >> Map.tryFind key
+let private isCompleted trie =
+    match trie with
+    | Root _ -> Some true
+    | Node (_, completed) -> Some completed
+
+let private tryGetChild key = getChildren >> Map.tryFind key
+
+let rec private createSubtree chars =
+    match chars with
+    | x :: xs -> Node(Map[(x, createSubtree xs)], false)
+    | [] -> Leaf
+
+let private addChild key child trie =
+    match trie with
+    | Root c -> c |> Map.add key child |> Root
+    | Node (c, completed) -> Node(c |> Map.add key child, completed)
+
+let createRoot () = Root Map.empty
 
 let tryFindNode word trie =
     let rec tryFindNodeByChars chars currentTrie =
@@ -25,15 +40,12 @@ let tryFindNode word trie =
 
     tryFindNodeByChars (word |> Seq.toList) trie
 
-let rec createSubtree chars =
-    match chars with
-    | x :: xs -> Node(Map[(x, createSubtree xs)], false)
-    | [] -> Leaf
+let containsPrefix word = tryFindNode word >> Option.isSome
 
-let addChild key child trie =
-    match trie with
-    | Root c -> c |> Map.add key child |> Root
-    | Node (c, completed) -> Node(c |> Map.add key child, completed)
+let contains word =
+    tryFindNode word
+    >> Option.bind isCompleted
+    >> Option.defaultValue false
 
 let put word trie =
     let rec putChars chars currentTrie =
