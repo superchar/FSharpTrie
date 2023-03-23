@@ -13,8 +13,10 @@ let private getChildren trie =
 
 let private isCompleted trie =
     match trie with
-    | Root _ -> Some true
-    | Node (_, completed) -> Some completed
+    | Root _ -> false
+    | Node (_, completed) -> completed
+
+let private isCompletedOption trie = Some(isCompleted trie)
 
 let private tryGetChild key = getChildren >> Map.tryFind key
 
@@ -27,6 +29,11 @@ let private addChild key child trie =
     match trie with
     | Root c -> c |> Map.add key child |> Root
     | Node (c, completed) -> Node(c |> Map.add key child, completed)
+
+let private removeChild key trie =
+    match trie with
+    | Root c -> c |> Map.remove key |> Root
+    | Node (c, completed) -> Node(c |> Map.remove key, completed)
 
 let createRoot () = Root Map.empty
 
@@ -44,7 +51,7 @@ let containsPrefix word = tryFindNode word >> Option.isSome
 
 let contains word =
     tryFindNode word
-    >> Option.bind isCompleted
+    >> Option.bind isCompletedOption
     >> Option.defaultValue false
 
 let put word trie =
@@ -57,3 +64,25 @@ let put word trie =
         | [] -> Leaf
 
     putChars (word |> Seq.toList) trie
+
+let words =
+    let generateChildWords wordsChildFn =
+        Map.toList
+        >> List.collect (fun (key, child) ->
+            let childWords =
+                (wordsChildFn child)
+                |> List.map (fun word -> key :: word)
+
+            if isCompleted child then
+                [ key ] :: childWords
+            else
+                childWords)
+
+    let rec generateWords node =
+        match node with
+        | Root c -> generateChildWords generateWords c
+        | Node (c, _) when c |> Map.isEmpty -> []
+        | Node (c, _) -> generateChildWords generateWords c
+
+    generateWords
+    >> List.map (fun wordList -> new string [| for c in wordList -> c |])

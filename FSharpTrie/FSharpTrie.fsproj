@@ -6,9 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="trie.fs" />
-        <Compile Include="Trie2.fs" />
-        <Compile Include="Program.fs" />
+      <Compile Include="Trie.fs" />
     </ItemGroup>
 
 </Project>
