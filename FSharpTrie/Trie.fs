@@ -17,7 +17,8 @@ let private isCompleted trie =
     | Node (_, completed) -> completed
     | Leaf -> true
 
-let private isCompletedOption trie = Some(isCompleted trie)
+let private isCompletedOption =
+    isCompleted >> Some
 
 let private tryGetChild key = getChildren >> Map.tryFind key
 
@@ -35,12 +36,12 @@ let private addChild key child trie =
 let createRoot () = Root Map.empty
 
 let tryFindNode word trie =
-    let rec tryFindNodeByChars chars currentTrie =
+    let rec tryFindNodeByChars chars =
         match chars with
         | x :: xs ->
-            tryGetChild x currentTrie
-            |> Option.bind (tryFindNodeByChars xs)
-        | [] -> Some currentTrie
+            tryGetChild x
+            >> Option.bind (tryFindNodeByChars xs)
+        | [] -> Some
 
     tryFindNodeByChars (word |> Seq.toList) trie
 
