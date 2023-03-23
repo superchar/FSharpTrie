@@ -3,18 +3,19 @@
 type T =
     | Root of Map<char, T>
     | Node of Map<char, T> * bool
-
-let private Leaf = Node(Map.empty, true)
+    | Leaf
 
 let private getChildren trie =
     match trie with
     | Root c -> c
     | Node (c, _) -> c
+    | Leaf -> Map.empty
 
 let private isCompleted trie =
     match trie with
     | Root _ -> false
     | Node (_, completed) -> completed
+    | Leaf -> true
 
 let private isCompletedOption trie = Some(isCompleted trie)
 
@@ -29,11 +30,7 @@ let private addChild key child trie =
     match trie with
     | Root c -> c |> Map.add key child |> Root
     | Node (c, completed) -> Node(c |> Map.add key child, completed)
-
-let private removeChild key trie =
-    match trie with
-    | Root c -> c |> Map.remove key |> Root
-    | Node (c, completed) -> Node(c |> Map.remove key, completed)
+    | Leaf -> Node(Map [ (key, child) ], true)
 
 let createRoot () = Root Map.empty
 
@@ -81,8 +78,8 @@ let words =
     let rec generateWords node =
         match node with
         | Root c -> generateChildWords generateWords c
-        | Node (c, _) when c |> Map.isEmpty -> []
         | Node (c, _) -> generateChildWords generateWords c
+        | Leaf -> []
 
     generateWords
     >> List.map (fun wordList -> new string [| for c in wordList -> c |])
