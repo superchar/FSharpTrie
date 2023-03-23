@@ -17,9 +17,6 @@ let private isCompleted trie =
     | Node (_, completed) -> completed
     | Leaf -> true
 
-let private isCompletedOption =
-    isCompleted >> Some
-
 let private tryGetChild key = getChildren >> Map.tryFind key
 
 let rec private createSubtree chars =
@@ -49,7 +46,7 @@ let containsPrefix word = tryFindNode word >> Option.isSome
 
 let contains word =
     tryFindNode word
-    >> Option.bind isCompletedOption
+    >> Option.map isCompleted
     >> Option.defaultValue false
 
 let put word trie =
