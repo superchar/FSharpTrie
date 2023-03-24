@@ -1,4 +1,4 @@
-﻿module FSharpTrie.Trie2
+﻿module FSharpTrie.Trie
 
 type T =
     | Root of Map<char, T>
@@ -49,7 +49,7 @@ let private removeChild key trie =
 
     match trie with
     | Root c -> c |> Map.remove key |> Root
-    | Node (c, completed) when shouldConvertToLeaf trie -> Leaf
+    | Node _ when shouldConvertToLeaf trie -> Leaf
     | Node (c, completed) -> Node(c |> Map.remove key, completed)
     | Leaf -> Leaf
 
@@ -79,7 +79,10 @@ let put word trie =
             match tryFindChild x currentTrie with
             | Some child -> addChild x (putChars xs child) currentTrie
             | None -> addChild x (createSubtree xs) currentTrie
-        | [] -> Leaf
+        | [] ->
+            match currentTrie with
+            | Node (c, _) -> Node(c, true)
+            | _ -> Leaf
 
     putChars (word |> Seq.toList) trie
 
@@ -129,6 +132,6 @@ let remove word trie =
             | _ -> newNode |> Keep
 
     if contains word trie then
-         removeChars (word |> Seq.toList) trie |> getNode
+        removeChars (word |> Seq.toList) trie |> getNode
     else
         None
