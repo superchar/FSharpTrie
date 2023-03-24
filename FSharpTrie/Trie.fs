@@ -5,6 +5,15 @@ type T =
     | Node of Map<char, T> * bool
     | Leaf
 
+type private ChildOperation =
+    | Keep of T
+    | Remove
+
+let private getNode operation =
+    match operation with
+    | Keep node -> Some node
+    | _ -> None
+
 let private getChildren trie =
     match trie with
     | Root c -> c
@@ -17,7 +26,9 @@ let private isCompleted trie =
     | Node (_, completed) -> completed
     | Leaf -> true
 
-let private tryGetChild key = getChildren >> Map.tryFind key
+let private tryFindChild key = getChildren >> Map.tryFind key
+
+let private findChild key = tryFindChild key >> Option.get
 
 let rec private createSubtree chars =
     match chars with
@@ -30,13 +41,25 @@ let private addChild key child trie =
     | Node (c, completed) -> Node(c |> Map.add key child, completed)
     | Leaf -> Node(Map [ (key, child) ], true)
 
-let createRoot () = Root Map.empty
+let private removeChild key trie =
+    let shouldConvertToLeaf (Node (c, completed)) =
+        completed
+        && c |> Map.containsKey key
+        && c |> Map.count = 1
+
+    match trie with
+    | Root c -> c |> Map.remove key |> Root
+    | Node (c, completed) when shouldConvertToLeaf trie -> Leaf
+    | Node (c, completed) -> Node(c |> Map.remove key, completed)
+    | Leaf -> Leaf
+
+let create () = Root Map.empty
 
 let tryFindNode word trie =
     let rec tryFindNodeByChars chars =
         match chars with
         | x :: xs ->
-            tryGetChild x
+            tryFindChild x
             >> Option.bind (tryFindNodeByChars xs)
         | [] -> Some
 
@@ -53,7 +76,7 @@ let put word trie =
     let rec putChars chars currentTrie =
         match chars with
         | x :: xs ->
-            match tryGetChild x currentTrie with
+            match tryFindChild x currentTrie with
             | Some child -> addChild x (putChars xs child) currentTrie
             | None -> addChild x (createSubtree xs) currentTrie
         | [] -> Leaf
@@ -81,3 +104,31 @@ let words =
 
     generateWords
     >> List.map (fun wordList -> new string [| for c in wordList -> c |])
+
+let remove word trie =
+    let rec removeChars word currentTrie =
+        match word with
+        | [] ->
+            match currentTrie with
+            | Root _ -> currentTrie |> Keep
+            | Node (c, _) -> Node(c, false) |> Keep
+            | Leaf -> Remove
+        | childKey :: xs ->
+            let newChild =
+                currentTrie
+                |> findChild childKey
+                |> removeChars xs
+
+            let newNode =
+                match newChild with
+                | Remove -> removeChild childKey currentTrie
+                | Keep child -> addChild childKey child currentTrie
+
+            match newNode with
+            | Node (c, _) when c |> Map.isEmpty -> Remove
+            | _ -> newNode |> Keep
+
+    if contains word trie then
+         removeChars (word |> Seq.toList) trie |> getNode
+    else
+        None
