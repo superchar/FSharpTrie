@@ -72,7 +72,7 @@ let contains (word: seq<char>) : T -> bool =
     >> Option.map isCompleted
     >> Option.defaultValue false
 
-let put: (string -> T -> T) =
+let put: (seq<char> -> T -> T) =
     let rec putChars (chars: char list) (currentTrie: T) : T =
         match chars with
         | x :: xs ->
