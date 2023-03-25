@@ -30,12 +30,12 @@ let private tryFindChild (key: char) : T -> T option = getChildren >> Map.tryFin
 
 let private findChild (key: char) : T -> T = tryFindChild key >> Option.get
 
-let rec private createSubtree (chars: char list) =
+let rec private createSubtree (chars: char list) : T =
     match chars with
     | x :: xs -> Node(Map[(x, createSubtree xs)], false)
     | [] -> Leaf
 
-let private addChild (key: char) (child: T) (trie: T) =
+let private addChild (key: char) (child: T) (trie: T) : T =
     match trie with
     | Root children -> children |> Map.add key child |> Root
     | Node (children, completed) -> Node(children |> Map.add key child, completed)
@@ -108,7 +108,7 @@ let words: T -> string list =
     generateWords
     >> List.map (fun wordList -> new string [| for c in wordList -> c |])
 
-let remove (word: seq<char>) (trie: T) =
+let remove (word: seq<char>) (trie: T) : T option =
     let rec removeChars (chars: char list) (currentTrie: T) : NodeOperation =
         match chars with
         | [] ->
