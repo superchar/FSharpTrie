@@ -5,16 +5,15 @@ open FsUnit
 open FsUnit.CustomMatchers
 open Xunit
 
-
 [<Fact>]
-let ``Test put`` () =
+let ``Calling put on word should add it to trie`` () =
     let trie =
         Trie.create () |> Trie.put "world"
 
     trie |> Trie.contains "world" |> should be True
 
 [<Fact>]
-let ``Test put with prefix of existing key`` () =
+let ``Calling put on prefix of existing key should keep the suffixes`` () =
     let trie =
         Trie.create ()
         |> Trie.put "hello"
@@ -29,7 +28,7 @@ let ``Test put with prefix of existing key`` () =
     |> should be True
 
 [<Fact>]
-let ``Test put with duplicate strings`` () =
+let ``Calling put on duplicated words should add it to trie once`` () =
     let putFun =
         Trie.put "hello" >> Trie.put "hello"
 
@@ -37,17 +36,18 @@ let ``Test put with duplicate strings`` () =
     trie |> Trie.contains "hello" |> should be True
 
 [<Fact>]
-let ``Test put with empty string`` () =
+let ``Calling put on empty string should return root`` () =
     let trie = Trie.create () |> Trie.put ""
     trie |> Trie.contains "" |> should be True
+    trie |> should be (ofCase <@ Trie.T.Root @>)
 
 [<Fact>]
-let ``Test create`` () =
+let ``Calling create should return root`` () =
     Trie.create ()
     |> should be (ofCase <@ Trie.T.Root @>)
 
 [<Fact>]
-let ``Test remove`` () =
+let ``Calling remove on existing word should remove it from the trie`` () =
     let trie =
         Trie.create () |> Trie.put "world"
 
@@ -57,7 +57,7 @@ let ``Test remove`` () =
     trie' |> Trie.contains "world" |> should be False
 
 [<Fact>]
-let ``Test remove prefix of existing key`` () =
+let ``Calling remove with prefix of existing key keeps the suffixes`` () =
     let trie =
         Trie.create ()
         |> Trie.put "hello"
@@ -75,7 +75,7 @@ let ``Test remove prefix of existing key`` () =
     |> should be True
 
 [<Fact>]
-let ``Test remove suffix of existing key`` () =
+let ``Calling remove with suffix of existing key keeps the prefixes`` () =
     let trie =
         Trie.create ()
         |> Trie.put "hello"
@@ -93,7 +93,7 @@ let ``Test remove suffix of existing key`` () =
     trie' |> Trie.contains "hell" |> should be True
 
 [<Fact>]
-let ``Test remove non existing key`` () =
+let ``Calling remove with non existing word returns none`` () =
     let trie =
         Trie.create () |> Trie.put "hello world!"
 
@@ -103,15 +103,20 @@ let ``Test remove non existing key`` () =
     result |> Option.isSome |> should be False
 
 [<Fact>]
-let ``Test remove with empty string`` () =
+let ``Calling remove with empty string returns root`` () =
     let trie =
         Trie.create () |> Trie.put "hello world!"
 
     let result = trie |> Trie.remove ""
-    result |> Option.isSome |> should be False
+    result |> Option.isSome |> should be True
+
+    result
+    |> Option.get
+    |> should be (ofCase <@ Trie.T.Root @>)
+
 
 [<Fact>]
-let ``Test tryFindNode with full word`` () =
+let ``Calling tryFindNode on existing word returns node`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -121,7 +126,7 @@ let ``Test tryFindNode with full word`` () =
     result |> Option.isSome |> should be True
 
 [<Fact>]
-let ``Test tryFindNode with word prefix`` () =
+let ``Calling tryFindNode on prefix returns node`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -129,7 +134,7 @@ let ``Test tryFindNode with word prefix`` () =
     result |> Option.isSome |> should be True
 
 [<Fact>]
-let ``Test tryFindNode with redundant characters`` () =
+let ``Calling tryFindNode on word with redundant characters returns none`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -139,7 +144,7 @@ let ``Test tryFindNode with redundant characters`` () =
     result |> Option.isSome |> should be False
 
 [<Fact>]
-let ``Test tryFindNode with non existing word`` () =
+let ``Calling tryFindNode on non existing word returns none`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -147,15 +152,19 @@ let ``Test tryFindNode with non existing word`` () =
     result |> Option.isSome |> should be False
 
 [<Fact>]
-let ``Test tryFindNode with empty string`` () =
+let ``Calling tryFindNode on empty string returns root`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
     let result = trie |> Trie.tryFindNode ""
     result |> Option.isSome |> should be True
 
+    result
+    |> Option.get
+    |> should be (ofCase <@ Trie.T.Root @>)
+
 [<Fact>]
-let ``Test containsPrefix with existing prefix`` () =
+let ``Calling containsPrefix on existing prefix returns true`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -165,7 +174,7 @@ let ``Test containsPrefix with existing prefix`` () =
     result |> should be True
 
 [<Fact>]
-let ``Test containsPrefix with existing word`` () =
+let ``Calling containsPrefix on existing word returns true`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -175,7 +184,7 @@ let ``Test containsPrefix with existing word`` () =
     result |> should be True
 
 [<Fact>]
-let ``Test containsPrefix with non existing prefix`` () =
+let ``Calling containsPrefix on non existing returns false`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -185,7 +194,7 @@ let ``Test containsPrefix with non existing prefix`` () =
     result |> should be False
 
 [<Fact>]
-let ``Test containsPrefix with empty string`` () =
+let ``Calling containsPrefix on empty string returns true`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -193,7 +202,7 @@ let ``Test containsPrefix with empty string`` () =
     result |> should be True
 
 [<Fact>]
-let ``Test contains with existing word`` () =
+let ``Calling contains on existing word returns true`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -201,7 +210,7 @@ let ``Test contains with existing word`` () =
     result |> should be True
 
 [<Fact>]
-let ``Test contains with existing prefix`` () =
+let ``Calling contains on existing prefix returns false`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -209,7 +218,7 @@ let ``Test contains with existing prefix`` () =
     result |> should be False
 
 [<Fact>]
-let ``Test contains with non existing word`` () =
+let ``Calling contains on non existing word returns false`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
@@ -217,15 +226,15 @@ let ``Test contains with non existing word`` () =
     result |> should be False
 
 [<Fact>]
-let ``Test contains with empty string`` () =
+let ``Calling contains on empty string returns true`` () =
     let trie =
         Trie.create () |> Trie.put "hello"
 
     let result = trie |> Trie.contains ""
-    result |> should be False
+    result |> should be True
 
 [<Fact>]
-let ``Test word with root`` () =
+let ``Calling words on root returns all words in trie`` () =
     let trie =
         Trie.create ()
         |> Trie.put "hello"
@@ -244,7 +253,7 @@ let ``Test word with root`` () =
                     "world" ])
 
 [<Fact>]
-let ``Test word with node`` () =
+let ``Calling words on node returns suffixes from all the children`` () =
     let trie =
         Trie.create ()
         |> Trie.put "hello"
@@ -260,7 +269,7 @@ let ``Test word with node`` () =
     |> should be (subsetOf [ "llo"; "ll"; "llo world!" ])
 
 [<Fact>]
-let ``Test word with leaf`` () =
+let ``Calling words on leaf returns empty string`` () =
     let trie =
         Trie.create ()
         |> Trie.put "hello"

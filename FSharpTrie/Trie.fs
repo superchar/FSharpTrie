@@ -5,24 +5,15 @@ type T =
     | Node of Map<char, T> * bool
     | Leaf
 
-type private NodeOperation =
-    | Keep of T
-    | Remove
-
-let private tryGetNode (operation: NodeOperation) : T option =
-    match operation with
-    | Keep node -> Some node
-    | _ -> None
-
 let private getChildren (trie: T) : Map<char, T> =
     match trie with
     | Root children -> children
-    | Node (c, _) -> c
+    | Node (children, _) -> children
     | Leaf -> Map.empty
 
 let private isCompleted (trie: T) : bool =
     match trie with
-    | Root _ -> false
+    | Root _ -> true
     | Node (_, completed) -> completed
     | Leaf -> true
 
@@ -82,6 +73,7 @@ let put: (seq<char> -> T -> T) =
         | [] ->
             match currentTrie with
             | Node (children, _) -> Node(children, true)
+            | Root _ -> currentTrie
             | _ -> Leaf
 
     Seq.toList >> putChars
@@ -109,30 +101,29 @@ let words: T -> string list =
     >> List.map (fun wordList -> new string [| for c in wordList -> c |])
 
 let remove (word: seq<char>) (trie: T) : T option =
-    let rec removeChars (chars: char list) (currentTrie: T) : NodeOperation =
+    let rec removeChars (chars: char list) (currentTrie: T) : T option =
         match chars with
         | [] ->
             match currentTrie with
-            | Root _ -> currentTrie |> Keep
-            | Node (children, _) -> Node(children, false) |> Keep
-            | Leaf -> Remove
+            | Root _ -> currentTrie |> Some
+            | Node (children, _) -> Node(children, false) |> Some
+            | Leaf -> None
         | childKey :: xs ->
-            let nodeOperation =
+            let childOption =
                 currentTrie
                 |> findChild childKey
                 |> removeChars xs
 
             let trie' =
-                match nodeOperation with
-                | Remove -> removeChild childKey currentTrie
-                | Keep child -> addChild childKey child currentTrie
+                match childOption with
+                | Some child -> addChild childKey child currentTrie
+                | None -> removeChild childKey currentTrie
 
             match trie' with
-            | Node (children, _) when children |> Map.isEmpty -> Remove
-            | _ -> trie' |> Keep
+            | Node (children, _) when children |> Map.isEmpty -> None
+            | _ -> trie' |> Some
 
     if contains word trie then
         removeChars (word |> Seq.toList) trie
-        |> tryGetNode
     else
         None
